@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fin-track</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <!-- AUTH SCREEN -->
+    <div id="auth-screen">
+        <div class="auth-card">
+            <div class="auth-brand"><span class="mark" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:var(--moss);color:#FFFFFF;font-style:normal;font-weight:700;font-size:0.9rem;transform:rotate(-4deg);">₧</span>FinTrack Pro</div>
+            <div class="auth-sub" id="auth-sub">Sign in to open your ledger.</div>
+        
+            <div class="auth-tabs">
+            <button class="auth-tab active" id="tab-login" onclick="setAuthTab('login')">Log In</button>
+            <button class="auth-tab" id="tab-signup" onclick="setAuthTab('signup')">Sign Up</button>
+            </div>
+        
+            <!-- LOGIN FORM -->
+            <div class="auth-form active" id="form-login">
+            <div class="field">
+                <label for="login-username">Name</label>
+                <input type="text" id="login-username" placeholder="e.g. Priya Sharma" autocomplete="username">
+            </div>
+            <div class="field">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+            </div>
+            <div class="auth-error" id="login-error"></div>
+            <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="handleLogin()">Log In</button>
+            </div>
+        
+            <!-- SIGNUP FORM -->
+            <div class="auth-form" id="form-signup">
+            <div class="field">
+                <label for="signup-name">Your name</label>
+                <input type="text" id="signup-name" placeholder="e.g. Priya Sharma">
+            </div>
+            <div class="field">
+                <label for="signup-password">Choose a password</label>
+                <input type="password" id="signup-password" placeholder="At least 6 characters" autocomplete="new-password">
+            </div>
+            <div class="auth-error" id="signup-error"></div>
+            <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="handleSignup()">Create Account</button>
+            </div>
+        </div>
+    </div>
+ 
+    <div id="app" class="hidden">
+        <nav class="navbar">
+        <div class="brand"><span class="mark">₧</span>FinTrack Pro</div>
+        <div class="nav-links">
+            <button class="nav-link active" data-page="dashboard" onclick="showPage('dashboard')">Dashboard</button>
+            <button class="nav-link" data-page="settings" onclick="showPage('settings')">Settings</button>
+        </div>
+        <div class="nav-actions">
+            <button class="btn btn-primary" onclick="openModal()">+ Add Transaction</button>
+            <button class="btn btn-ghost" onclick="handleLogout()" title="Log out"><span class="logout-icon">⎋</span><span>Log Out</span></button>
+        </div>
+        </nav>
+        
+        <!-- DASHBOARD -->
+        <section class="page visible" id="page-dashboard">
+        <p class="eyebrow">Ledger overview</p>
+        <div class="page-header">
+            <h1 class="page-title" id="greeting">Your Ledger</h1>
+            <button class="btn btn-danger" onclick="resetAll()">Reset Data</button>
+        </div>
+        
+        <div class="cards">
+            <div class="card balance"><div class="stamp">NET</div><div class="label">Current Balance</div><div class="value" id="stat-balance">—</div></div>
+            <div class="card income"><div class="stamp">IN</div><div class="label">Total Income</div><div class="value" id="stat-income">—</div></div>
+            <div class="card expense"><div class="stamp">OUT</div><div class="label">Total Expense</div><div class="value" id="stat-expense">—</div></div>
+            <div class="card count"><div class="stamp">#</div><div class="label">Total Transactions</div><div class="value" id="stat-count">—</div></div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-head">
+            <div class="panel-title">Cash Flow</div>
+            <div class="panel-sub">Income vs. expense by date</div>
+            </div>
+            <div class="chart-wrap"><canvas id="cashflow-chart"></canvas></div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-head">
+            <div class="panel-title">Transactions</div>
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All Types</button>
+                <button class="filter-btn" data-filter="income" onclick="setFilter('income')">Income Only</button>
+                <button class="filter-btn" data-filter="expense" onclick="setFilter('expense')">Expense Only</button>
+            </div>
+            </div>
+            <table>
+            <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th></th></tr></thead>
+            <tbody id="tx-tbody"></tbody>
+            </table>
+        </div>
+        </section>
+        
+        <!-- SETTINGS -->
+        <section class="page" id="page-settings">
+            <p class="eyebrow">Preferences</p>
+            <h1 class="page-title">Settings</h1>
+            
+            <div class="panel settings-group">
+                <div class="settings-row">
+                <div class="meta"><div class="t">Account</div><div class="d">You're signed in as this username</div></div>
+                <span class="cat-chip" id="account-username">—</span>
+                </div>
+                <div class="settings-row">
+                <div class="meta"><div class="t">Your name</div><div class="d">Shown in the dashboard greeting</div></div>
+                <input type="text" id="input-name" placeholder="Enter your name" onchange="updateName(this.value)">
+                </div>
+                <div class="settings-row">
+                <div class="meta"><div class="t">Currency</div><div class="d">Changes how amounts are displayed everywhere</div></div>
+                <select id="input-currency" onchange="updateCurrency(this.value)">
+                    <option value="INR">₹ INR</option>
+                    <option value="USD">$ USD</option>
+                    <option value="EUR">€ EUR</option>
+                    <option value="GBP">£ GBP</option>
+                    <option value="JPY">¥ JPY</option>
+                </select>
+                </div>
+                <div class="settings-row">
+                <div class="meta"><div class="t">Dark mode</div><div class="d">Switch to a dim, ledger-at-night palette</div></div>
+                    <label class="switch">
+                        <input type="checkbox" id="input-dark" onchange="toggleDarkMode(this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+        </section>
+        
+        <!-- MODAL -->
+        <div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this) closeModal()">
+            <div class="modal">
+
+                <h3>Add Transaction</h3>
+
+                <div class="type-toggle" style="margin-bottom:16px;">
+                    <button id="type-income" onclick="setTxType('income')">Income</button>
+                    <button id="type-expense" onclick="setTxType('expense')">Expense</button>
+                </div>
+
+                <div class="field">
+                    <label for="input-desc">Description</label>
+                    <input type="text" id="input-desc" placeholder="e.g. Freelance payment">
+                </div>
+
+                <div class="field">
+                    <label for="input-amount">Amount</label>
+                    <input type="number" id="input-amount" placeholder="0.00" min="0" step="0.01">
+                </div>
+
+                <div class="field">
+                    <label for="input-date">Date</label>
+                    <input type="date" id="input-date">
+                </div>
+
+                <div class="field">
+                    <label for="input-category">Category</label>
+                    <select id="input-category">
+                        <option>Food & Dining</option>
+                        <option>Shopping</option>
+                        <option>Recharge & Bills</option>
+                        <option>Petrol & Auto</option>
+                        <option>Utilities</option>
+                        <option>Salary</option>
+                        <option>Entertainment</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+
+                <div class="form-error" id="form-error"></div>
+
+                <div class="modal-actions">
+                    <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="saveTransaction()">Save Transaction</button>
+                </div>
+
+            </div>
+        </div>
+    
+    </div>
+ 
+    <div class="toast" id="toast"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+    
+</body>
+</html>
